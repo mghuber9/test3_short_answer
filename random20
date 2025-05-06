@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Texas Government Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #quiz-container, #results-container, #score-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .question {
+            margin-bottom: 15px;
+        }
+        .question p {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .question input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #results-container .result {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        #results-container .correct {
+            background: #d4edda;
+        }
+        #results-container .incorrect {
+            background: #f8d7da;
+        }
+        #score-container {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Texas Government Quiz</h1>
+    <div id="quiz-container"></div>
+    <button id="submit-quiz" style="display: none;">Submit Answers</button>
+    <div id="results-container" style="display: none;"></div>
+    <button id="submit-score" style="display: none;">Submit for Final Score</button>
+    <div id="score-container" style="display: none;"></div>
+
+    <script>
+        // All 143 questions from the provided documents
+        const questions = [
+            {"question": "What is the role of a district clerk in the judicial system?", "correct": "Maintaining court records and managing jury duty notices"},
+            {"question": "What is the primary role of county governments in Texas?", "correct": "To act as administrative arms of the state and provide local services"},
+            {"question": "What is the role of the city manager in a council-manager government?", "correct": "Implementing policies passed by the city council"},
+            {"question": "What is the main source of funding for most local governments in Texas?", "correct": "Property taxes"},
+            {"question": "What does the city council typically do?", "correct": "Passes local ordinances and sets city policies"},
+            {"question": "What is a municipal ordinance?", "correct": "A law passed by a city council that applies within city limits"},
+            {"question": "What is the function of the Texas Municipal League (TML)?", "correct": "It provides support and advocacy for cities in Texas"},
+            {"question": "What is zoning in city government?", "correct": "Dividing city land into sections for specific uses like residential or commercial"},
+            {"question": "How are school board members chosen in Texas?", "correct": "Elected by local voters"},
+            {"question": "What is the role of a city charter?", "correct": "It sets the rules and framework for a home rule city’s government"},
+            {"question": "What is one advantage of a single-member district system?", "correct": "It ensures proportional representation of geographic areas"},
+            {"question": "What level of government most directly affects citizens’ daily lives in Texas?", "correct": "Local"},
+            {"question": "Why are counties referred to as 'administrative arms of the state' in Texas?", "correct": "Because they carry out state laws and provide services locally"},
+            {"question": "Which court often handles traffic violations and Class C misdemeanors?", "correct": "Justice of the Peace"},
+            {"question": "What does a grand jury decide in Texas?", "correct": "Whether enough evidence exists to bring criminal charges"},
+            {"question": "Which type of jury decides the outcome of a criminal or civil trial?", "correct": "Trial jury"},
+            {"question": "What is the difference between a grand jury and a trial jury?", "correct": "A grand jury decides whether to indict, while a trial jury determines guilt or innocence"},
+            {"question": "Which courts in Texas generally handle felony cases?", "correct": "District courts"},
+            {"question": "What does it mean when a court has original jurisdiction?", "correct": "It can hear a case for the first time"},
+            {"question": "What type of case is typically heard first by the Justice of the Peace?", "correct": "Traffic tickets and small claims"},
+            {"question": "Which court level primarily handles civil cases involving large amounts of money or felony criminal trials?", "correct": "District court"},
+            {"question": "What is appellate jurisdiction?", "correct": "Authority to review decisions from lower courts"},
+            {"question": "What are local governments in Texas primarily responsible for?", "correct": "Providing basic services like roads, police, and fire protection"},
+            {"question": "Who issues arrest warrants and subpoenas in county-level courts?", "correct": "The Justice of the Peace"},
+            {"question": "What is a civil case?", "correct": "A lawsuit over property, contracts, or family matters"},
+            {"question": "What distinguishes a criminal case from a civil case?", "correct": "Criminal cases deal with violations of law punishable by fines or jail"},
+            {"question": "What is the role of the sheriff in a Texas county?", "correct": "Enforcing laws and managing the county jail"},
+            {"question": "Who is responsible for registering voters in Texas counties?", "correct": "Tax assessor-collector"},
+            {"question": "What is the function of a county auditor in Texas?", "correct": "To oversee financial records and ensure proper use of public funds"},
+            {"question": "Which official is typically elected in a general election in Texas counties?", "correct": "County judge"},
+            {"question": "Why do local governments use planning departments?", "correct": "To coordinate services and future development"},
+            {"question": "Why are open meetings important in local government?", "correct": "They help maintain transparency and allow citizens to observe the process"},
+            {"question": "What is the primary difference between a regressive and a progressive tax?", "correct": "Regressive taxes place a heavier burden on low-income earners, while progressive taxes increase with income"},
+            {"question": "What is a general law city?", "correct": "A city that operates under state law without a custom charter"},
+            {"question": "What is a home rule city?", "correct": "A city that adopts a charter approved by local voters"},
+            {"question": "What is the difference between a strong mayor-council and a council-manager form of city government?", "correct": "In a council-manager system, a professional manager implements policies set by the council"},
+            {"question": "Which area is a major focus of state and local spending in Texas?", "correct": "Public education and infrastructure"},
+            {"question": "What is a biennial budget?", "correct": "A budget that covers two fiscal years"},
+            {"question": "What is the purpose of municipal bonds?", "correct": "To raise funds for capital projects like roads and public buildings"},
+            {"question": "What does ad valorem mean in the context of property taxes?", "correct": "According to the assessed value of the property"},
+            {"question": "What is the function of a Council of Government (COG) in Texas?", "correct": "To coordinate planning and services between local governments"},
+            {"question": "What is one of the main duties of the county judge in Texas?", "correct": "Presiding over the commissioners court and issuing emergency declarations"},
+            {"question": "What is the primary function of the commissioners court in Texas counties?", "correct": "Administering state and county government services"},
+            {"question": "Which group sets policies, approves budgets, and hires the superintendent in local school districts?", "correct": "The school board"},
+            {"question": "What is the role of the Texas comptroller in the budget process?", "correct": "To estimate state revenues and certify the budget"},
+            {"question": "What is the significance of single-member districts in local elections?", "correct": "They give each geographic area its own representative"},
+            {"question": "What is a justice of the peace responsible for in Texas?", "correct": "Hearing minor civil and criminal matters"},
+            {"question": "What do constables typically do in county government?", "correct": "Serve legal papers and support justice of the peace courts"},
+            {"question": "What are capital improvements in the context of local government?", "correct": "Long-term investments in infrastructure like buildings or flood control"},
+            {"question": "How are municipal bonds typically repaid?", "correct": "With tax revenue or revenue from the funded project"},
+            {"question": "Why does Texas use a biennial budget system?", "correct": "Because the legislature meets once every two years"},
+            {"question": "How is a county commissioner chosen in Texas?", "correct": "Elected from a single-member precinct within the county"},
+            {"question": "What is the main responsibility of the county clerk?", "correct": "Maintaining official records and documents"},
+            {"question": "What is a major reason for using a professional city manager?", "correct": "To bring expertise and consistency to local government operations"},
+            {"question": "Why are municipal bonds considered important for local governments?", "correct": "They allow cities to fund large projects without raising taxes immediately"},
+            {"question": "What is a county treasurer's role in Texas government?", "correct": "Managing and disbursing county funds"},
+            {"question": "What is one of the county sheriff’s key duties?", "correct": "Enforcing the law and managing the county jail"},
+            {"question": "Why is the commissioner’s court not a judicial court despite its name?", "correct": "It performs executive and legislative functions, not judicial"},
+            {"question": "What is the function of the tax assessor-collector in Texas counties?", "correct": "Calculating and collecting local taxes like property tax"},
+            {"question": "What is an example of a capital improvement project?", "correct": "Building a new fire station or upgrading a sewer system"},
+            {"question": "What is the benefit of long-range planning in city budgeting?", "correct": "It helps align spending with future needs and revenue projections"},
+            {"question": "What is the role of special districts like ISDs (Independent School Districts)?", "correct": "Providing a single service such as education"},
+            {"question": "What type of revenue do cities often use to repay municipal bonds?", "correct": "Property or sales taxes"},
+            {"question": "What type of city operates under charters written by the Texas legislature?", "correct": "General law cities"},
+            {"question": "What is one advantage of home rule cities over general law cities?", "correct": "They can write and adopt their own charter and structure"},
+            {"question": "What defines a regressive tax in the context of Texas taxation?", "correct": "It places a higher burden on lower-income individuals as a percentage of income"},
+            {"question": "Why are sales taxes in Texas considered regressive?", "correct": "Everyone pays the same rate regardless of income"},
+            {"question": "What characterizes a progressive tax?", "correct": "It increases in rate as income increases, burdening the wealthy more"},
+            {"question": "Which is an example of a progressive tax mentioned in the chapter?", "correct": "Federal income tax"},
+            {"question": "Why does Texas rely heavily on regressive taxes like sales and fuel taxes?", "correct": "Because it has no personal income tax"},
+            {"question": "What is a primary goal of progressive tax structures?", "correct": "To reduce income inequality"},
+            {"question": "How do general law cities in Texas function?", "correct": "They operate under laws provided by the Texas Legislature"},
+            {"question": "What limits the power of general law cities in Texas?", "correct": "State law, which expressly defines their powers"},
+            {"question": "What allows home rule cities in Texas to govern themselves?", "correct": "Adoption of charters for populations over 5,000"},
+            {"question": "What does home rule provide to Texas cities?", "correct": "More autonomy in local policy, taxation, and government structure"},
+            {"question": "What is a common government structure for general law cities in Texas?", "correct": "Standard mayor-council government"},
+            {"question": "What can home rule cities in Texas do with fewer state restrictions?", "correct": "Annex land and set term limits"},
+            {"question": "Who executes policies in a council-manager city government in Texas?", "correct": "A professional manager hired by the council"},
+            {"question": "What is the typical role of the mayor in a council-manager system?", "correct": "Ceremonial or part of the council"},
+            {"question": "What distinguishes the mayor in a strong mayor-council city?", "correct": "Independently elected with executive powers"},
+            {"question": "What powers does a strong mayor have in a Texas city?", "correct": "Oversees departments, prepares the budget, and can veto council actions"},
+            {"question": "How are council-manager governments typically viewed in Texas?", "correct": "As more businesslike and efficient"},
+            {"question": "Where are strong mayor systems commonly found in Texas?", "correct": "In larger cities where visibility and leadership are key"},
+            {"question": "Which area receives the largest share of Texas state spending?", "correct": "Education"},
+            {"question": "What is the second largest area of Texas state spending?", "correct": "Health and Human Services"},
+            {"question": "What does Texas's transportation spending primarily cover?", "correct": "Highways, TxDOT, and public infrastructure"},
+            {"question": "What area of Texas spending significantly funds prisons?", "correct": "Public safety and criminal justice"},
+            {"question": "What does Texas's general government spending cover?", "correct": "Operation of state agencies and executive offices"},
+            {"question": "What does business and economic development spending in Texas include?", "correct": "Workforce training and economic development"},
+            {"question": "When does Texas pass its state budget?", "correct": "Every two years during odd-year legislative sessions"},
+            {"question": "How far in advance must Texas forecast revenue for its biennial budget?", "correct": "30 months"},
+            {"question": "What limits the Texas legislature's spending in the budget process?", "correct": "The comptroller's revenue estimate"},
+            {"question": "Why is responding to mid-cycle crises difficult in Texas's budget system?", "correct": "Because of infrequent sessions in the biennial cycle"},
+            {"question": "What does Texas's biennial budgeting system promote?", "correct": "Conservative fiscal practices"},
+            {"question": "When are supplemental budgets passed in Texas?", "correct": "If revenue exceeds projections"},
+            {"question": "What do municipal bonds primarily fund in Texas?", "correct": "Public projects like schools, roads, and utilities"},
+            {"question": "How are municipal bonds in Texas typically repaid?", "correct": "Over time, typically through taxes or user fees"},
+            {"question": "What is a characteristic of general obligation bonds in Texas?", "correct": "They require voter approval and are backed by taxes"},
+            {"question": "How are revenue bonds in Texas repaid?", "correct": "From specific income sources, like toll roads"},
+            {"question": "What do municipal bonds allow Texas cities to do?", "correct": "Make long-term investments without immediate tax hikes"},
+            {"question": "What benefit do municipal bonds offer to investors in Texas?", "correct": "Favorable tax treatment"},
+            {"question": "What do Texas counties primarily manage?", "correct": "Local roads, public safety, and elections"},
+            {"question": "What administrative functions do Texas counties perform?", "correct": "Maintain property records and conduct criminal and civil courts"},
+            {"question": "What services do Texas counties provide?", "correct": "Operation of jails and indigent healthcare"},
+            {"question": "What limits the governance of Texas counties?", "correct": "Powers defined by the state, without home rule"},
+            {"question": "What body governs Texas counties and passes local policies?", "correct": "The commissioners court"},
+            {"question": "What role do Texas counties play in relation to state government?", "correct": "They are the administrative arm at the local level"},
+            {"question": "What does the term 'ad valorem' refer to in Texas taxation?", "correct": "Property taxes based on value"},
+            {"question": "How are ad valorem taxes in Texas assessed?", "correct": "Based on the market value of property each year"},
+            {"question": "What are ad valorem taxes in Texas primarily used to fund?", "correct": "Local services like schools and fire departments"},
+            {"question": "Who sets the tax rates for ad valorem taxes in Texas?", "correct": "Local taxing authorities like school boards or city councils"},
+            {"question": "Who determines property values for ad valorem taxes in Texas?", "correct": "The appraisal district"},
+            {"question": "Why does Texas rely heavily on ad valorem taxes?", "correct": "Because it has no state income tax"},
+            {"question": "What are Councils of Government (COGs) in Texas?", "correct": "Voluntary associations of local governments for regional cooperation"},
+            {"question": "What do Texas COGs coordinate?", "correct": "Transportation, emergency planning, and economic development"},
+            {"question": "How many regional COGs are there in Texas, and what do they cover?", "correct": "24, covering all counties"},
+            {"question": "How are Texas COGs funded?", "correct": "From local, state, and federal sources"},
+            {"question": "What services do Texas COGs provide?", "correct": "Training, research, and grant administration"},
+            {"question": "What limitation do Texas COGs have?", "correct": "They lack taxing authority or binding legislative powers"},
+            {"question": "What is the role of the county judge in Texas?", "correct": "Presides over the commissioners court and represents the county"},
+            {"question": "Who comprises the Texas commissioners court?", "correct": "Four commissioners and the judge"},
+            {"question": "What does the Texas commissioners court do?", "correct": "Adopts the county budget, sets tax rates, and oversees county programs"},
+            {"question": "What additional Duties may the Texas county judge perform?", "correct": "Emergency management and rural judicial duties"},
+            {"question": "What does each commissioner in a Texas county represent?", "correct": "A precinct within the county"},
+            {"question": "How does the Texas commissioners court function?", "correct": "As both a legislative and executive local body"},
+            {"question": "What do local school boards in Texas do for independent school districts?", "correct": "Set policy and direction"},
+            {"question": "What are key responsibilities of Texas local school boards?", "correct": "Adopting budgets, hiring superintendents, and overseeing curriculum standards"},
+            {"question": "How are Texas local school boards structured?", "correct": "Composed of elected members serving staggered terms"},
+            {"question": "Within what framework do Texas school boards establish local policies?", "correct": "State and federal law"},
+            {"question": "What can Texas school boards do to fund new schools?", "correct": "Call for bond elections"},
+            {"question": "What do Texas school boards represent in the education system?", "correct": "Community interests"},
+            {"question": "What does Texas fiscal policy emphasize?", "correct": "Low taxes and limited government"},
+            {"question": "What taxes does Texas rely on due to no personal income tax?", "correct": "Sales and property taxes"},
+            {"question": "What limits deficit spending in Texas?", "correct": "Balanced budget requirements"},
+            {"question": "What is a core political value in Texas fiscal policy?", "correct": "Fiscal conservatism"},
+            {"question": "How do tax increases affect Texas budget decisions?", "correct": "They are politically unpopular, shaping budget decisions"},
+            {"question": "What restricts budget flexibility in Texas?", "correct": "Federal mandates and dedicated funds"},
+            {"question": "What does the Texas comptroller do before budgets are passed?", "correct": "Estimates and certifies revenue"},
+            {"question": "What does the comptroller's revenue estimate determine?", "correct": "How much the legislature can spend"},
+            {"question": "What administrative role does the Texas comptroller perform?", "correct": "Collects state taxes and manages state accounts"},
+            {"question": "What additional duties does the Texas comptroller have?", "correct": "Audits expenditures and provides economic forecasts"},
+            {"question": "How can the comptroller's estimate affect the Texas legislature?", "correct": "A conservative estimate can constrain legislative ambitions"},
+            {"question": "What role does the comptroller's office play in Texas finance?", "correct": "A crucial gatekeeping role"}
+        ];
+
+        // Function to shuffle an array
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Select 20 random questions
+        const selectedQuestions = shuffle([...questions]).slice(0, 20);
+        const studentAnswers = new Array(20).fill('');
+        const isCorrect = new Array(20).fill(false);
+
+        // Display quiz
+        function displayQuiz() {
+            const quizContainer = document.getElementById('quiz-container');
+            quizContainer.innerHTML = '';
+            selectedQuestions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.innerHTML = `
+                    <p>${index + 1}. ${q.question}</p>
+                    <input type="text" id="answer-${index}" placeholder="Your answer">
+                `;
+                quizContainer.appendChild(questionDiv);
+            });
+            document.getElementById('submit-quiz').style.display = 'block';
+        }
+
+        // Handle quiz submission
+        document.getElementById('submit-quiz').addEventListener('click', () => {
+            // Collect answers
+            selectedQuestions.forEach((q, index) => {
+                const answerInput = document.getElementById(`answer-${index}`);
+                studentAnswers[index] = answerInput.value.trim();
+            });
+
+            // Display results
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = '';
+            selectedQuestions.forEach((q, index) => {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'result';
+                resultDiv.innerHTML = `
+                    <p><strong>Question:</strong> ${q.question}</p>
+                    <p><strong>Your Answer:</strong> ${studentAnswers[index] || 'No answer'}</p>
+                    <p><strong>Correct Answer:</strong> ${q.correct}</p>
+                    <label><input type="checkbox" id="correct-${index}"> Mark as Correct</label>
+                `;
+                resultsContainer.appendChild(resultDiv);
+            });
+            resultsContainer.style.display = 'block';
+            document.getElementById('submit-quiz').style.display = 'none';
+            document.getElementById('submit-score').style.display = 'block';
+        });
+
+        // Handle final score submission
+        document.getElementById('submit-score').addEventListener('click', () => {
+            let score = 0;
+            selectedQuestions.forEach((q, index) => {
+                const checkbox = document.getElementById(`correct-${index}`);
+                isCorrect[index] = checkbox.checked;
+                if (isCorrect[index]) score++;
+            });
+
+            // Update result divs with correct/incorrect styling
+            const resultDivs = document.querySelectorAll('.result');
+            resultDivs.forEach((div, index) => {
+                div.className = 'result ' + (isCorrect[index] ? 'correct' : 'incorrect');
+            });
+
+            // Display final score
+            const scoreContainer = document.getElementById('score-container');
+            scoreContainer.innerHTML = `Your Final Score: ${score} out of 20 (${(score / 20 * 100).toFixed(2)}%)`;
+            scoreContainer.style.display = 'block';
+            document.getElementById('submit-score').style.display = 'none';
+        });
+
+        // Initialize quiz
+        displayQuiz();
+    </script>
+</body>
+</html>
